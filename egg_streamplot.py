@@ -151,6 +151,12 @@ def draw_speed_streamplot(stream_map, n_sacle=3, plt_density=5):
     return None
 
 
+def get_acceleration():
+    print('1')
+    return None
+
+
+
 #TODO(JZ)useless
 def example_streamplot():
     w = 3

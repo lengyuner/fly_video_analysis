@@ -70,7 +70,7 @@ def show_all_hours_in_one_3D_picture(position_np,from_show_length = 0,to_show_le
     return None
 
 
-def show_all_hours_3D_picture_separately(position_np, from_hour=0, to_hour=13, num_plt_begin =10):
+def show_all_hours_3D_picture_separately(position_np, from_hour=0, to_hour=13, num_plt_begin=10, fps=25):
     x_max = max(position_np[:, 0])
     y_max = max(position_np[:, 1])
 
@@ -81,8 +81,8 @@ def show_all_hours_3D_picture_separately(position_np, from_hour=0, to_hour=13, n
     for K in range(from_hour, to_hour):
         from_hour_analysis = K
         to_hour_analysis = K + 1
-        from_show_length = 25 * 60 * 60 * from_hour_analysis
-        to_show_length = 25 * 60 * 60 * to_hour_analysis
+        from_show_length = fps * 60 * 60 * from_hour_analysis
+        to_show_length = fps * 60 * 60 * to_hour_analysis
         print(position_np.shape)
         x = position_np[from_show_length:to_show_length, 0]
         y = position_np[from_show_length:to_show_length, 1]
@@ -106,17 +106,17 @@ def show_all_hours_3D_picture_separately(position_np, from_hour=0, to_hour=13, n
     return None
 
 
-def show_one_hours_3D_picture_separately(position_np, from_hour=10, num_interval=10, num_plt_begin =100):
+def show_one_hours_3D_picture_separately(position_np, from_hour=10, num_interval=10, num_plt_begin=100, fps=25):
     x_max = max(position_np[:, 0])
     y_max = max(position_np[:, 1])
     print(position_np.shape)
     # from_hour_analysis = 0
     # to_hour_analysis = 1
-    # from_show_length = 25 * 60 * 60 * from_hour_analysis
-    # to_show_length = 25 * 60 * 60 * to_hour_analysis
+    # from_show_length = fps * 60 * 60 * from_hour_analysis
+    # to_show_length = fps * 60 * 60 * to_hour_analysis
     to_hour = from_hour + 1
-    from_frame_analysis = 25 * 60 * 60 * from_hour
-    to_frame_analysis = 25 * 60 * 60 * to_hour
+    from_frame_analysis = fps * 60 * 60 * from_hour
+    to_frame_analysis = fps * 60 * 60 * to_hour
 
     for K in range(0, num_interval):
         from_hour_analysis = K

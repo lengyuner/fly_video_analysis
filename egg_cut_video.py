@@ -137,7 +137,7 @@ def cut_video_batch_process(from_name = '../CS (201031).MTS', task_name = 'video
 #TODO(JZ)uncompleted, using formatfactory is faster
 def transform_video(from_name = '../CS (201031).MTS', to_name = '../data/video_CS_20201031.avi',
               x1=556, x2=708, y1=242, y2=446, fps = 25, mins = 2,
-              if_save_video = 0, if_save_pic = 0, if_get_one_pic=0):
+              if_save_video = 0, if_save_pic=0, if_get_one_pic=0):
     videoCapture = cv2.VideoCapture(from_name)
 
     size = (x2 - x1, y2 - y1)  # 保存视频的大小 #WH

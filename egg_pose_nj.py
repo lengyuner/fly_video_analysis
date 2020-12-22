@@ -234,23 +234,25 @@ def draw_orentation_scatterplot(orentation_np):
     fig = plt.figure()
     ax = fig.gca(projection='3d')
     # plt.figure()
-    ax.scatter(x_body, y_body, index, marker='o', s=5, c=y, cmap='rainbow')
+    ax.scatter(x_body, y_body, index, marker='o', s=5, c=x, cmap='summer')
     # ax.legend()
     # ax.set_xlim(-threshold,threshold)
     # ax.set_ylim(-threshold,threshold)
+    plt.title('x')
     plt.show()
 
     fig = plt.figure()
     ax = fig.gca(projection='3d')
     # plt.figure()
-    ax.scatter(x_body, y_body, index, marker='o', s=5, c=y, cmap='rainbow')
+    ax.scatter(x_body, y_body, index, marker='o', s=5, c=y, cmap='summer')
     # ax.legend()
     # ax.set_xlim(-threshold,threshold)
     # ax.set_ylim(-threshold,threshold)
+    plt.title('y')
     plt.show()
     return None
 
-
+# rainbow
 # plt.scatter(X[:, 0], X[:, 1], marker='o', c=y, cmap='plasma')
 # plt.subplot(232)
 # plt.scatter(X[:, 0], X[:, 1], marker='o', c=y, cmap='Oranges')
@@ -265,7 +267,7 @@ def draw_orentation_scatterplot(orentation_np):
 
 
 
-def draw_orentation_scatterplot_by_part(orentation_np):
+def draw_orentation_scatterplot_by_part(orentation_np, fps=25):
     threshold = 30
     orentation_modified = np.copy(orentation_np)
     for K_0 in range(len(orentation_modified)):
@@ -276,8 +278,8 @@ def draw_orentation_scatterplot_by_part(orentation_np):
     K = 0
     from_hour_analysis = K
     to_hour_analysis = K + 1
-    from_show_length = 25 * from_hour_analysis
-    to_show_length = -1  # 25  * to_hour_analysis * 40
+    from_show_length = fps * from_hour_analysis
+    to_show_length = -1  # fps  * to_hour_analysis * 40
     print(orentation_modified.shape)
 
     x_body = orentation_modified[from_show_length:to_show_length, 1]

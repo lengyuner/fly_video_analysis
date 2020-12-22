@@ -44,7 +44,7 @@ def get_position_by_threshold(video_name, hours = 1, threshold = 70, fps = 25):
                 print(K_0)
                 print(stat)
             K_0 += 1
-            if K_0 % (25 * 100) == 0:
+            if K_0 % (fps * 100) == 0:
                 print('K_0:   ', K_0)
         else:
             break
