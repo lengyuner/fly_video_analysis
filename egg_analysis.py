@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 from egg_cut_video import cut_video_batch_process
 from egg_cut_video import cut_video, get_processed_pic, save_pic_from_video
 
-from egg_position import get_position_by_threshold, modify_position
+from egg_position import get_position_by_threshold, get_position_by_background, modify_position
 
 from egg_heatmap import heatmap_without_time_not_modified, heatmap_without_time_modified
 from egg_heatmap import heatmap_with_time, heatmap_with_time_sum
@@ -23,6 +23,11 @@ from egg_heatmap import heatmap_with_time, heatmap_with_time_sum
 from egg_heatmap import show_all_hours_in_one_3D_picture,show_all_hours_3D_picture_separately
 from egg_heatmap import show_one_hours_3D_picture_separately
 
+
+
+# get_position_by_background_and_save_pictures(video_name, hours =13, edge=[6, 8], threshold=70, fps=25,
+#                                to_path='../data/picture/train2020/', if_save_pic=1,
+#                                      background_interval=1000)
 
 
 #######################################################
@@ -180,7 +185,11 @@ need_save_position_np = 0
 for K in range(len(video_name_all)):
     video_name = video_name_all[K]
     if need_compute_position == 1:
-        position = get_position_by_threshold(video_name, hours=13, threshold=90, fps=25)
+        # position = get_position_by_threshold(video_name, hours=13, threshold=90, fps=25)
+
+        position = get_position_by_background(video_name, hours=2, edge=[6, 8], threshold=70, fps=25,
+                                              to_path='../data/picture/train2020/', if_save_pic=0,
+                                              background_interval=1000)
     position_np = np.array(position)
     position_name = video_name[:-4] + '_position.npy'
     if need_save_position_np == 1:
@@ -223,7 +232,7 @@ modify_position(position_np,need_modify=0)
 
 show_all_hours_in_one_3D_picture(position_np,from_show_length = 0,to_show_length = len(position_np),interval=10)
 
-show_all_hours_3D_picture_separately(position_np, from_hour=0, to_hour=13, num_plt_begin =10)
+show_all_hours_3D_picture_separately(position_np, from_hour=0, to_hour=2, num_plt_begin =10)
 
 show_one_hours_3D_picture_separately(position_np, from_hour=2, num_interval=3, num_plt_begin =100)
 
@@ -242,7 +251,9 @@ for K in range(len(video_name_all)):
     plt.title(video_name_all[K].split('/')[2][6:-12]+'_'+video_name_all[K].split('/')[3][-6:-4])
     # heatmap = heatmap_without_time_modified(position_np_all[K], distance_threshold=10, frame_interval=10, max_count=160, if_show_pic=1)
     # heatmap = heatmap_without_time_modified(position_np_all[K],distance_threshold = 5,frame_interval=3,max_count=45,if_show_pic=1)
-    heatmap = heatmap_without_time_modified(position_np_all[K], distance_threshold=5, frame_interval=1, max_count=20, if_show_pic=1)
+    # heatmap = heatmap_without_time_modified(position_np_all[K][0:180000], distance_threshold=5, frame_interval=1, max_count=20, if_show_pic=1)
+    heatmap = heatmap_without_time_modified(position_np_all[K][0:180000], distance_threshold=5, frame_interval=10,
+                                            max_count=20, if_show_pic=1)
     print(video_name_all[K])
     heatmap_all.append(heatmap)
 
@@ -252,7 +263,7 @@ position_heatmap_time=heatmap_with_time(position_np, fps=25, interval_short=10,
                                         num_interval=51, length_process=len(position_np), if_show_pic=1)
 
 
-a=heatmap_with_time_sum(position_heatmap_time, interval_long=10,
+a = heatmap_with_time_sum(position_heatmap_time, interval_long=10,
                         num_interval=51, max_count=70000, if_show_pic=1)
 
 
@@ -260,7 +271,7 @@ a=heatmap_with_time_sum(position_heatmap_time, interval_long=10,
 #######################################################
 #######################################################
 #######################################################
-#
+
 
 from egg_streamplot import get_speed, draw_2D_speed_centered, draw_3D_speed_centered
 from egg_streamplot import draw_speed_streamplot
@@ -271,7 +282,7 @@ position_np = np.load(position_name)
 print(position_np.shape)
 
 
-speed_np = get_speed(position_np, distance_threshold=10,frame_interval=10, save_interval=100)
+speed_np = get_speed(position_np, distance_threshold=10, frame_interval=10, save_interval=100)
 
 draw_2D_speed_centered(speed_np)
 
@@ -284,7 +295,7 @@ print(stream_map.shape)
 # stream_map[0]
 # K_0, x, y, x_1 - x, y_1 - y, x_2 - x, y_2 - y, x_3 - x, y_3 - y, x_4 - x, y_4 - y
 
-draw_speed_streamplot(stream_map, n_sacle=3, plt_density=3)
+draw_speed_streamplot(stream_map, n_scale=3, plt_density=3)
 
 
 #######################################################
@@ -294,151 +305,22 @@ draw_speed_streamplot(stream_map, n_sacle=3, plt_density=3)
 
 # acceleration
 
+from egg_streamplot import get_acceleration, draw_acceleration_streamplot
+
+
 time = 10
 speed = get_speed(position_np, distance_threshold=10,frame_interval=time, save_interval=time)
-acceleration = np.copy(speed[1:, 0:7])
-acceleration.shape
-acceleration[:, 5:7] = np.copy(speed[1:,3:5]-speed[:-1,3:5])
-print(acceleration.shape)
 
+acceleration = get_acceleration(speed)
 
-def acceleration_heatmap_without_time_modified(acceleration, distance_threshold=10,frame_interval=10, max_count=160,if_show_pic=0):
-    x = acceleration[:, 1]
-    y = acceleration[:, 2]
+draw_acceleration_streamplot(acceleration, from_hour_analysis=0, to_hour_analysis=2,
+                                 fps=25, save_interval=time, n_scale=3, plt_density=3)
 
-    num_x_interval = int(max(x)) + 1
-    num_y_interval = int(max(y)) + 1
-    position_heatmap = np.zeros([num_y_interval, num_x_interval])
+# acceleration = np.copy(speed[1:, 0:7])
+# acceleration.shape
+# acceleration[:, 5:7] = np.copy(speed[1:,3:5]-speed[:-1,3:5])
+# print(acceleration.shape)
 
-    for K_0 in range(frame_interval, len(acceleration) - frame_interval):
-        # distance_1 = np.sum(np.square(position_np[K_0 - frame_interval, 0:2] - position_np[K_0, 0:2]))
-        # distance_2 = np.sum(np.square(position_np[K_0 + frame_interval, 0:2] - position_np[K_0, 0:2]))
-        distance_1 = (x[K_0 - frame_interval] - x[K_0]) ** 2 + (y[K_0 - frame_interval] - y[K_0]) ** 2
-        distance_2 = (x[K_0 + frame_interval] - x[K_0]) ** 2 + (y[K_0 + frame_interval] - y[K_0]) ** 2
-        if distance_1 > distance_threshold or distance_2 > distance_threshold:
-
-            # print(position_np[K - 1:K + 2, 0:3])
-            # print(distance_1, distance_2)
-            x = x_modified[K_0]
-            y = y_modified[K_0]
-            # distance = np.sum
-            if position_heatmap[int(y), int(x)] < max_count:
-                position_heatmap[int(y), int(x)] += 1
-
-        # x = x_modified[K_0]
-        # y = y_modified[K_0]
-        # # distance = np.sum
-        # position_heatmap[int(y),int(x)]+=1
-
-    # print(position_heatmap.shape)
-    if if_show_pic:
-        import matplotlib.pyplot as plt
-        # plt.figure()
-        plt.imshow(position_heatmap)
-        plt.colorbar()
-        plt.show()
-    # print()
-    return position_heatmap
-
-
-
-# a = speed.astype('int')
-# b = acceleration.astype('int')
-#
-#
-# a[1000:1004]
-# b[1000:1002]
-#
-#
-# speed[0:2]
-# acceleration_1[0:2]
-#
-# x_position = acceleration_1[K_0, 1]
-# y_position = acceleration_1[K_0, 2]
-
-
-
-
-
-
-
-# position_np[K_0, 2], x, y, x_1 - x, y_1 - y, x_2 - x, y_2 - y, x_3 - x, y_3 - y, x_4 - x, y_4 - y,
-
-# speed
-acceleration = []
-# v_x_1 = speed[:, 3,4]
-for K_0 in range(len(speed)):
-    # v_x_1 = speed[K_0, ]
-
-    acceleration.append([
-        speed[K_0,0:2], speed[K_0]
-    ])
-
-    a=1
-
-def get_acceleration(speed_np,distance_threshold = 10,frame_interval=10, save_interval = 10):
-    '''
-    speed_distance = 5
-    第一个代表大小
-    第二个维度代表x
-    第三个维度代表y
-    或者添加一个角度？
-
-    综合一下，某个位置的全部信息？求一个平均？
-    代表果蝇在这个位置的一个
-
-
-    还可以用一下聚类？
-    把他所在点的前后的信息都找出来？
-
-    位置，时间，
-    前后移动的距离
-    前后五个点的位置
-    最好用差值？
-    就是和这个位置的差值？
-    '''
-
-    x_org = position_np[:, 0]
-    x_modified = x_org - min(x_org)
-
-    y_org = position_np[:, 1]
-    y_modified = y_org - min(y_org)
-    y_modified = y_modified * max(x_modified) / (max(y_org) - min(y_org))
-
-    # for K_0 in range(len_position):
-    # x = position_np
-
-    # num_x_interval = int(max(x_modified)) + 1
-    # num_y_interval = int(max(y_modified)) + 1
-
-    # position_heatmap = np.zeros([num_y_interval, num_x_interval])
-
-    # 找出来静止的店和运动的点，可以在找到运动速度图之后再搞这个
-
-
-    speed = []
-    for K_0 in range(0, len(position_np) - 4 * frame_interval):
-        x = x_modified[K_0]
-        y = y_modified[K_0]
-        x_1 = x_modified[K_0 + frame_interval]
-        y_1 = y_modified[K_0 + frame_interval]
-
-        x_2 = x_modified[K_0 + 2 * frame_interval]
-        y_2 = y_modified[K_0 + 2 * frame_interval]
-
-        x_3 = x_modified[K_0 + 3 * frame_interval]
-        y_3 = y_modified[K_0 + 3 * frame_interval]
-
-        x_4 = x_modified[K_0 + 4 * frame_interval]
-        y_4 = y_modified[K_0 + 4 * frame_interval]
-        if K_0 % save_interval == 0:
-            speed.append(
-                [position_np[K_0, 2], x, y, x_1 - x, y_1 - y, x_2 - x, y_2 - y, x_3 - x, y_3 - y, x_4 - x, y_4 - y, ])
-
-    speed_np = np.asarray(speed)
-
-    print(speed_np.shape)
-    return speed_np
 
 
 
@@ -456,8 +338,8 @@ from egg_pose_nj import pose_to_orentation_by_part, draw_pose_streamplot,draw_or
 
 csv_name = '../data/video_CS_20201031_h_0_to_h_13/orientation/video_CS_20201031_h_0_to_h_13_552_713_239_447_4_pose.csv'
 
-
-pose = np.load('pose.npy')
+pose_npy_name = csv_name[:-4]+'.npy'
+pose = np.load(pose_npy_name)
 
 
 use_int = 1
@@ -476,6 +358,12 @@ draw_pose_streamplot(orentation_np, plt_density=5 )
 
 draw_orentation_scatterplot(orentation_np)
 
+
+
+
+draw_pose_streamplot(orentation_part, plt_density=5 )
+
+draw_orentation_scatterplot(orentation_part)
 
 #######################################################
 #######################################################
@@ -519,6 +407,141 @@ if rubbish==1:
 
 rubbish=0
 if rubbish==1:
+    # draw_acceleration_streamplot
+    # acceleration_heatmap_without_time_modified
+    # def draw_acceleration_streamplot(acceleration, from_hour_analysis=0, to_hour_analysis=2,
+    #                                                distance_threshold=10, frame_interval=10, max_count=160,
+    #                                                if_show_pic=0, fps=25):
+    #     x_all = acceleration[:, 1]
+    #     y_all = acceleration[:, 2]
+    #
+    #     num_x_interval = int(max(x_all)) + 1
+    #     num_y_interval = int(max(y_all)) + 1
+    #     position_heatmap = np.zeros([num_y_interval, num_x_interval])
+    #
+    #     from_show_length = fps * 60 * 60 * from_hour_analysis
+    #     to_show_length = fps * 60 * 60 * to_hour_analysis
+    #
+    #     for K_0 in range(from_show_length, to_show_length):
+    #
+    #         distance_1 = (x_all[K_0 - frame_interval] - x_all[K_0]) ** 2 + (y_all[K_0 - frame_interval] - y_all[K_0]) ** 2
+    #         distance_2 = (x_all[K_0 + frame_interval] - x_all[K_0]) ** 2 + (y_all[K_0 + frame_interval] - y_all[K_0]) ** 2
+    #         if distance_1 > distance_threshold or distance_2 > distance_threshold:
+    #
+    #             x = x_all[K_0]
+    #             y = y_all[K_0]
+    #             # distance = np.sum
+    #             if position_heatmap[int(y), int(x)] < max_count:
+    #                 position_heatmap[int(y), int(x)] += 1
+    #
+    #         # x = x_modified[K_0]
+    #         # y = y_modified[K_0]
+    #         # # distance = np.sum
+    #         # position_heatmap[int(y),int(x)]+=1
+    #
+    #     # print(position_heatmap.shape)
+    #     if if_show_pic:
+    #         import matplotlib.pyplot as plt
+    #         # plt.figure()
+    #         plt.imshow(position_heatmap)
+    #         plt.colorbar()
+    #         plt.show()
+    #     # print()
+    #     return position_heatmap
+
+    # a = speed.astype('int')
+    # b = acceleration.astype('int')
+    #
+    #
+    # a[1000:1004]
+    # b[1000:1002]
+    #
+    #
+    # speed[0:2]
+    # acceleration_1[0:2]
+    #
+    # x_position = acceleration_1[K_0, 1]
+    # y_position = acceleration_1[K_0, 2]
+
+    # position_np[K_0, 2], x, y, x_1 - x, y_1 - y, x_2 - x, y_2 - y, x_3 - x, y_3 - y, x_4 - x, y_4 - y,
+
+    # speed
+
+    # acceleration = []
+    # # v_x_1 = speed[:, 3,4]
+    # for K_0 in range(len(speed)):
+    #     # v_x_1 = speed[K_0, ]
+    #
+    #     acceleration.append([
+    #         speed[K_0,0:2], speed[K_0]
+    #     ])
+    #
+    #     a=1
+    #
+    # def get_acceleration(speed_np,distance_threshold = 10,frame_interval=10, save_interval = 10):
+    #     '''
+    #     speed_distance = 5
+    #     第一个代表大小
+    #     第二个维度代表x
+    #     第三个维度代表y
+    #     或者添加一个角度？
+    #
+    #     综合一下，某个位置的全部信息？求一个平均？
+    #     代表果蝇在这个位置的一个
+    #
+    #
+    #     还可以用一下聚类？
+    #     把他所在点的前后的信息都找出来？
+    #
+    #     位置，时间，
+    #     前后移动的距离
+    #     前后五个点的位置
+    #     最好用差值？
+    #     就是和这个位置的差值？
+    #     '''
+    #
+    #     x_org = position_np[:, 0]
+    #     x_modified = x_org - min(x_org)
+    #
+    #     y_org = position_np[:, 1]
+    #     y_modified = y_org - min(y_org)
+    #     y_modified = y_modified * max(x_modified) / (max(y_org) - min(y_org))
+    #
+    #     # for K_0 in range(len_position):
+    #     # x = position_np
+    #
+    #     # num_x_interval = int(max(x_modified)) + 1
+    #     # num_y_interval = int(max(y_modified)) + 1
+    #
+    #     # position_heatmap = np.zeros([num_y_interval, num_x_interval])
+    #
+    #     # 找出来静止的店和运动的点，可以在找到运动速度图之后再搞这个
+    #
+    #
+    #     speed = []
+    #     for K_0 in range(0, len(position_np) - 4 * frame_interval):
+    #         x = x_modified[K_0]
+    #         y = y_modified[K_0]
+    #         x_1 = x_modified[K_0 + frame_interval]
+    #         y_1 = y_modified[K_0 + frame_interval]
+    #
+    #         x_2 = x_modified[K_0 + 2 * frame_interval]
+    #         y_2 = y_modified[K_0 + 2 * frame_interval]
+    #
+    #         x_3 = x_modified[K_0 + 3 * frame_interval]
+    #         y_3 = y_modified[K_0 + 3 * frame_interval]
+    #
+    #         x_4 = x_modified[K_0 + 4 * frame_interval]
+    #         y_4 = y_modified[K_0 + 4 * frame_interval]
+    #         if K_0 % save_interval == 0:
+    #             speed.append(
+    #                 [position_np[K_0, 2], x, y, x_1 - x, y_1 - y, x_2 - x, y_2 - y, x_3 - x, y_3 - y, x_4 - x, y_4 - y, ])
+    #
+    #     speed_np = np.asarray(speed)
+    #
+    #     print(speed_np.shape)
+    #     return speed_np
+
     # x_body = orentation_np[:, 1]
     # y_body = orentation_np[:, 2]
     # y_body = max(y_body) -y_body

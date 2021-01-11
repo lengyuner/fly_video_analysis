@@ -14,7 +14,7 @@ import matplotlib.gridspec as gridspec
 
 
 
-def get_speed(position_np,distance_threshold = 10,frame_interval=10, save_interval = 20):
+def get_speed(position_np, distance_threshold = 10, frame_interval=10, save_interval = 10):
     '''
     speed_distance = 5
     第一个代表大小
@@ -104,12 +104,12 @@ def draw_3D_speed_centered(speed_np):
     return None
 
 
-def draw_speed_streamplot(stream_map, n_sacle=3, plt_density=5):
+def draw_speed_streamplot(stream_map, n_scale=3, plt_density=5):
     # max(stream_map[:, 1])
     # max(stream_map[:, 2])
 
-    max_x = int(max(stream_map[:, 1]) / n_sacle) + 1
-    max_y = int(max(stream_map[:, 2]) / n_sacle) + 1
+    max_x = int(max(stream_map[:, 1]) / n_scale) + 1
+    max_y = int(max(stream_map[:, 2]) / n_scale) + 1
 
     if abs(max_x - max_y) > 2:
         print('x and y have not benn modified. break.')
@@ -122,8 +122,8 @@ def draw_speed_streamplot(stream_map, n_sacle=3, plt_density=5):
         for K_0 in range(len(stream_map)):
             # y = stream_map[K_0, 2] / n_sacle
             # y = (max(orentation_np[:, 2]) - orentation_np[K_0, 2]) / n_sacle
-            x = stream_map[K_0, 1] / n_sacle
-            y = (max(stream_map[:, 2]) - stream_map[K_0, 2]) / n_sacle
+            x = stream_map[K_0, 1] / n_scale
+            y = (max(stream_map[:, 2]) - stream_map[K_0, 2]) / n_scale
             speed_x_streamplot[int(y), int(x)] += stream_map[K_0, 3]
             speed_y_streamplot[int(y), int(x)] -= stream_map[K_0, 4]
             # speed_y_streamplot[int(y), int(x)] += stream_map[K_0, 4]
@@ -151,11 +151,60 @@ def draw_speed_streamplot(stream_map, n_sacle=3, plt_density=5):
     return None
 
 
-def get_acceleration():
-    print('1')
+def get_acceleration(speed):
+    # time = 10
+    # speed = get_speed(position_np, distance_threshold=10, frame_interval=time, save_interval=time)
+    acceleration = np.copy(speed[1:, 0:7])
+    # acceleration.shape
+    acceleration[:, 5:7] = np.copy(speed[1:, 3:5] - speed[:-1, 3:5])
+    print(acceleration.shape)
+    return acceleration
+
+
+def draw_acceleration_streamplot(acceleration, from_hour_analysis=0, to_hour_analysis=2,
+                                 fps=25, save_interval=10, n_scale=3, plt_density=5):
+    # max(stream_map[:, 1])
+    # max(stream_map[:, 2])
+
+    max_x = int(max(acceleration[:, 1]) / n_scale) + 1
+    max_y = int(max(acceleration[:, 2]) / n_scale) + 1
+
+    from_show_length = int(fps * 60 * 60 * from_hour_analysis / save_interval)
+    to_show_length = int(fps * 60 * 60 * to_hour_analysis / save_interval)
+
+    # for K_0 in range(from_show_length, to_show_length)
+
+    if abs(max_x - max_y) > 2:
+        print('x and y have not benn modified. break.')
+        # return None
+    else:
+        print('Processing data.')
+        max_x_y = max(max_x, max_y)
+        acceleration_x_streamplot = np.zeros([max_x_y, max_x_y])
+        acceleration_y_streamplot = np.zeros([max_x_y, max_x_y])
+        acceleration_count_streamplot = np.ones([max_x_y, max_x_y])
+        for K_0 in range(from_show_length, to_show_length):
+            x = acceleration[K_0, 1] / n_scale
+            y = (max(acceleration[:, 2]) - acceleration[K_0, 2]) / n_scale
+            acceleration_x_streamplot[int(y), int(x)] += acceleration[K_0, 5]
+            acceleration_y_streamplot[int(y), int(x)] -= acceleration[K_0, 6]
+            # speed_y_streamplot[int(y), int(x)] += stream_map[K_0, 4]
+            acceleration_count_streamplot[int(y), int(x)] += 1
+        # for K_1 in range(speed_x_streamplot.shape[0]):
+        #     for K_2
+        acceleration_x_streamplot /= acceleration_count_streamplot
+        acceleration_y_streamplot /= acceleration_count_streamplot
+        print(acceleration_x_streamplot[:4, :4])
+
+    print(acceleration_x_streamplot.shape)
+    print('Begin to plot.')
+    Y, X = np.mgrid[0:max_x_y, 0:max_x_y]
+    U = acceleration_x_streamplot
+    V = acceleration_y_streamplot
+    plt.figure()
+    plt.streamplot(X, Y, U, V, density=[plt_density, plt_density])
+    plt.title('Acceleration')
     return None
-
-
 
 #TODO(JZ)useless
 def example_streamplot():

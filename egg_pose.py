@@ -230,6 +230,239 @@ fly_pose_estimation_by_batch = pose_estimation_by_batch(video_name, hours = 1/60
 
 
 
+# 制作一个新的数据集
+# 然后训练网络
+# 共有117 0000个图像
+# 那么，需要11700 个做训练
+# 每 25*10 取一下
+# 就有4680张图像做训练
+#
+
+
+
+# 首先要解决图像大小不一样的问题
+#
+
+
+# 保存图片
+
+
+video_name = '../data/video_CS_20201031_h_0_to_h_13/video_CS_20201031_h_0_to_h_13_552_713_239_447_4.avi'
+
+def save_train_picture_by_background(video_name, hours = 1/60, edge = 10, threshold = 70, fps = 25,
+                               to_path = '../data/picture/train2020/', if_save_pic=0,
+                                     background_interval = 1000):
+    to_path     = '../data/fly_coco/coco/'
+    to_path_ann = '../data/fly_coco/ann/'
+    draw_points = 1
+    start_time = time.time()
+    if draw_points==1:
+        csv_name = '../data/video_CS_20201031_h_0_to_h_13/orientation/video_CS_20201031_h_0_to_h_13_552_713_239_447_4_pose.csv'
+        pose_npy_name = csv_name[:-4] + '.npy'
+        pose = np.load(pose_npy_name)
+
+
+    videoCapture = cv2.VideoCapture(video_name)
+    success, frame_temp = videoCapture.read()
+    if success:
+        y_max, x_max, n_cha = frame_temp.shape
+    videoCapture.release()
+
+
+    background = np.zeros([y_max, x_max, n_cha])
+    videoCapture = cv2.VideoCapture(video_name)
+    # num_frame = 180000
+
+    num_frame = int(fps * 60 * 60 * 1)
+    #   num_frame = 180000
+    for K in range(num_frame):
+        success, frame_temp = videoCapture.read()
+        # frame_temp = frame_temp[6:230, 144:368, 3]
+        background = np.maximum(frame_temp, background)
+
+    videoCapture.release()
+    background = background.astype('uint8')
+
+
+    num_frame = int(fps * 60 * 60 * hours)
+
+    videoCapture = cv2.VideoCapture(video_name)
+    # num_frame = 4001
+    # num_frame = 180000
+    start_time = time.time()
+    for K_0 in range(num_frame):
+        # while True:
+        # K_0=0
+        success, frame = videoCapture.read()
+        if success and K_0 % (fps * 10) == 0:
+            frame_1 = np.copy(frame)
+            # y_max, x_max, n_cha = frame_1.shape
+            # # plt.imshow(frame_1)
+            # frame_blured = cv2.medianBlur(frame_1, 3)
+            # frame_bi = cv2.cvtColor(frame_blured, cv2.COLOR_RGB2GRAY)
+            # # plt.imshow(frame_bi,'gray')
+            #
+            # frame_bi[frame_bi < threshold] = 0
+            # frame_bi[frame_bi >= threshold] = 255
+            # # frame_bi = cv2.adaptiveThreshold(frame_bi, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+            # #                                  cv2.THRESH_BINARY, 25, 5)
+            # # plt.imshow(frame_3_body,'gray')
+            # frame_3_body = 255 - frame_bi.astype(np.uint8)
+
+            frame_new = background - frame_1
+            #   plt.imshow(frame_new)
+
+            frame_new[frame_new < threshold] = 0
+            frame_new[frame_new >= threshold] = 255
+
+            frame_3_body = cv2.cvtColor(frame_new, cv2.COLOR_RGB2GRAY)
+
+            ret, labels, stats, centroid = cv2.connectedComponentsWithStats(frame_3_body, connectivity=4)
+            # print(stats)
+
+            for i, stat in enumerate(stats):
+                # stat=stats[1]
+                if stat[4] > 50 and stat[4] < 300 and stat[2] < 50 and stat[2] > 3 and stat[3] > 3 and stat[3] < 50:  # stat[4] > 100 and
+                    x1, y1, w, h, area = stat
+                    # position.append([centroid[i][0], centroid[i][1], K_0, K_1, x1, y1, h, w, area])
+                    x2, y2 = x1 + w, y1 + h
+                    # print(y1 - edge,y2 + edge,x1 - edge,x2 + edge)
+                    y1 = max(0, y1 - edge)
+                    y2 = min(y_max, y2 + edge)
+                    x1 = max(0, x1 - edge)
+                    x2 = min(x_max, x2 + edge)
+
+                    pose_x = pose[K_0, 3:12:2]
+                    pose_y = pose[K_0, 4:13:2]
+
+                    proof = 1
+                    for K_4 in range(len(pose_x)):
+                        if pose_x[K_4] >= x1 and pose_x[K_4] <= x2:
+                            proof = proof * 1
+                        else:
+                            proof = proof * 0
+
+                        if pose_y[K_4] >= y1 and pose_y[K_4] <= y2:
+                            proof = proof * 1
+                        else:
+                            proof = proof * 0
+
+
+                    if proof == 1 and draw_points == 1:
+                        center = pose[K_0, 3], pose[K_0, 4]#, pose[K_0, 3]#x,y#
+                        radius = 5  # int(radius)
+                        print(K_0,'      ',center,'___',y1,y2,'_',x1,x2,'\n')
+                        # center = 0, 120
+                        frame_2 = np.copy(frame_1)
+
+                        frame_2 = cv2.circle(frame_2, center, radius, (255, 0, 0), -1)
+                        # plt.figure()
+                        # plt.imshow(frame)
+                        img_fly = np.copy(frame_1[y1:y2, x1:x2,:])
+                        img_fly_ann = np.copy(frame_2[y1:y2, x1:x2,:])
+                        # print(img_fly.shape)
+                        # plt.figure()
+                        # plt.imshow(img_fly)
+
+                        if if_save_pic == 1:
+                            pic_name = str(K_0) + '-' + str(x1) + '_' + str(x2) + '_' \
+                                       + str(y1) + '_' + str(y2) + '-' + '.jpg'
+                            plt.imsave(to_path + pic_name, img_fly)
+                            plt.imsave(to_path_ann + pic_name, img_fly_ann)
+
+
+
+                        # plt.imsave(to_path+str(K_0)+'.bmp',frame)
+                    # plt.imsave(to_path+str(K_0)+'_'+str(i)+'.jpg',img_fly)
+                    # if K_1 == 0:
+                    #     input = []
+
+                    # input.append(process_single_picture(img_fly))
+                    # if K_1 == 0:
+                    #     onnx_input_h = 96
+                    #     onnx_input_w = 128
+                    #     print(img_fly.shape)
+                    #     a = cv2.resize(img_fly, (onnx_input_w, onnx_input_h), interpolation=cv2.INTER_CUBIC)
+                    #     # a = img_fly
+                    # K_1 += 1
+                    #
+                    # # if K_1 % batch_size != 0:
+                    # #     input.append(process_single_picture(img_fly))
+                    #
+                    # if K_1 % batch_size == 0:
+                    #     img_data_by_batch = np.array(input)
+                    #     result = sess.run(outputs, {"x:0": img_data_by_batch})
+                    #     conf_map, paf = result
+                    #     conf_by_batch = transform_infer_rusult(a, conf_map)
+                    #     pose_result.append(conf_by_batch)
+                    #     input = []
+
+            if K_0 % (25 * 100) == 0:
+                end_time = time.time()
+                # print("Time used: ", end_time - start_time, 's    ', 'K_0: ', K_0)
+                # print('K_0:   ', K_0)
+    videoCapture.release()
+    return None
+
+save_train_picture_by_background(video_name, hours = 13, edge = 10, threshold = 70, fps = 25,
+                               to_path = '../data/picture/train2020/', if_save_pic=1,
+                                     background_interval = 1000)
+
+# fps = 25
+# hours = 2#/60
+# threshold = 90
+# edge = 10#20
+
+# videoCapture = cv2.VideoCapture(video_name)
+# K_2 = 0
+# K_1 = 0
+# K_0 = 0
+# start_time = time.time()
+#
+# num_frame = int(fps * 60 * 60 * hours)
+# edge_x = 6
+# edge_y = 8
+# to_path = '../data/picture/train2020/'
+
+# background_interval = 1000
+
+
+
+
+#
+# background = np.zeros([y_max, x_max, n_cha])
+# videoCapture = cv2.VideoCapture(video_name)
+# # num_frame = 180000
+# for K in range(num_frame):
+#     success, frame_temp = videoCapture.read()
+#     # frame_temp = frame_temp[6:230, 144:368, 3]
+#     background = np.maximum(frame_temp, background)
+#
+# videoCapture.release()
+# background = background.astype('uint8')
+# plt.imshow(background)
+# frame_new = background-frame_temp
+#
+# threshold = 70
+# frame_new[frame_new<threshold]=0
+# frame_new[frame_new>=threshold]=255
+#
+# plt.imshow(frame_new)
+
+#
+# plt.imshow(255-background+frame_temp)
+
+
+
+
+#     else:
+#         break
+#
+# if K_0 >= num_frame - 10:
+#     print('Completed. Congratulations!')
+# videoCapture.release()
+
+
 
 
 

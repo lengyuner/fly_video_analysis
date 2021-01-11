@@ -1,4 +1,21 @@
 /old
 /temp
 /__pycache__/
+
+
+
+# data
 pose.npy
+*.npy
+
+
+
+*.ipynb
+
+*.ipynb_checkpoints
+
+.idea
+
+
+
+
