@@ -13,6 +13,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+
+
 def get_position_by_threshold(video_name, hours = 1, threshold = 70, fps = 25):
     K_0 = 0
     num_frame = int(fps * 60 * 60 *hours)
