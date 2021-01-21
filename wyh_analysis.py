@@ -1,35 +1,11 @@
 
 
-
-
-
-
-
-
-
 import os
 import cv2
 import time
 import numpy as np
 import matplotlib.pyplot as plt
 
-# hours =
-# threshold = 20
-# fps = 100
-# K_0 = 0
-# num_frame = int(fps * 60 * 60 *hours)
-#
-# position = []
-# videoCapture = cv2.VideoCapture(video_name)
-# for K_0 in range(num_frame):
-# # while True:
-#     success, frame = videoCapture.read()
-#     if success:
-#         plt.figure()
-#         plt.imshow(frame)
-
-
-# from egg_position import get_position_by_background
 
 def if_path_exist(to_path):
     if os.path.isdir(to_path):
@@ -85,7 +61,7 @@ def get_background(video_name, hours=1 / 60, fps=100, background_interval=1):
     # plt.imshow(background)
     return background
 
-# threshold=40
+
 def process_picture(frame, background, threshold):
     frame_1 = np.copy(frame)
     # plt.figure()
@@ -194,134 +170,58 @@ def get_position_by_background(video_name, hours=1/60, threshold=40, fps=100,
     return position, background, error_info
 
 
-# def get_position_by_background_for_test(video_name, hours=1 / 60, threshold=40, fps=100,
-#                                background_interval=1):
+def process_picture_for_test(frame, background, threshold):
+    frame_1 = np.copy(frame)
+    plt.figure()
+    K_1 = 1
+    plt.subplot(3, 2, K_1)
+    K_1 += 1
+    plt.imshow(frame_1)
+
+    plt.subplot(3, 2, K_1)
+    K_1 += 1
+    plt.imshow(background)
+
+    frame_clean = background - frame_1
+    plt.subplot(3, 2, K_1)
+    K_1 += 1
+    plt.imshow(frame_clean)
+
+    frame_blured = cv2.medianBlur(frame_clean, 3)
+    plt.subplot(3, 2, K_1)
+    K_1 += 1
+    plt.imshow(frame_blured)
+
+    frame_grey = cv2.cvtColor(frame_blured, cv2.COLOR_RGB2GRAY)
+    frame_grey[frame_grey >= 240] = 0
+    frame_grey[frame_grey < threshold] = 0
+    frame_grey[frame_grey >= threshold] = 255
+    plt.subplot(3, 2, K_1)
+    K_1 += 1
+    plt.imshow(frame_grey)
+
+    ret, labels, stats, centroid = cv2.connectedComponentsWithStats(frame_grey, connectivity=4)
+    # print(stats)
+    K_1 = 0
+    for i, stat in enumerate(stats):
+        # stat=stats[1]
+        if if_is_fly(stat):
+            K_1 += 1
+            x1, y1, w, h, area = stat
+            print(stat)
+    return None
 
 
-#
-#     background = get_background(video_name, hours, fps, background_interval)
-#     plt.figure()
-#     plt.imshow(background)
-#
-#     position = []
-#     error_info = []
-#
-#     start_time = time.time()
-#     videoCapture = cv2.VideoCapture(video_name)
-#     num_frame = int(fps * 60 * 60 * hours)
-#     # num_frame = 4090
-#
-#     K_error = 0
-#     for K_0 in range(num_frame):
-#         success, frame = videoCapture.read()
-#         if success:
-#             frame_grey = process_picture(frame, background, threshold)
-#
-#             ret, labels, stats, centroid = cv2.connectedComponentsWithStats(frame_grey, connectivity=4)
-#             # print(stats)
-#             K_1 = 0
-#             for i, stat in enumerate(stats):
-#                 # stat=stats[1]
-#                 if if_is_fly(stat):
-#                     K_1 += 1
-#                     x1, y1, w, h, area = stat
-#
-#                     position.append([centroid[i][0], centroid[i][1], K_0, K_1, x1, y1, h, w, area])
-#
-#             if K_1 != 7:
-#                 K_error += 1
-#                 print('Error: frame ', K_0, 'has ', K_1, 'flies')
-#                 print(stats)
-#                 error_info.append([K_0, stats, frame, frame_grey])
-#                 if K_error < 10:
-#                     plt.figure()
-#                     plt.imshow(frame_grey)
-#
-#             if K_error == 10:
-#                 # break
-#                 return position, background, error_info
-#
-#         if K_0 % (fps * 60) == 0:
-#             end_time = time.time()
-#             print("Time used: ", end_time - start_time, 's    ', 'K_0: ', K_0)
-#             print('K_0:   ', K_0)
-#     videoCapture.release()
-#     print('The video :', video_name, ' has', num_frame, )
-#     return position, background, error_info
-
-
-#
-# def get_position_by_threshold(video_name, hours=1, threshold=50, fps=100):
-#     K_0 = 0
-#     num_frame = int(fps * 60 * 60 * hours)
-#
-#     position = []
-#     videoCapture = cv2.VideoCapture(video_name)
-#     # num_frame =2920
-#     for K_0 in range(num_frame):
-#         # while True:
-#         success, frame = videoCapture.read()
-#         if success:
-#             x1 = 369
-#             x2 = 457
-#             y1 = 22
-#             y2 = 408
-#             frame_1 = np.copy(frame[y1:y2, x1:x2, :])
-#             # !!!!!!!!!!!!!!!!!!!!!!!!!!
-#             # print(frame_1.shape)
-#             # plt.imshow(frame_1)
-#             frame_blured = cv2.medianBlur(frame_1, 3)
-#             frame_bi = cv2.cvtColor(frame_blured, cv2.COLOR_RGB2GRAY)
-#             # plt.imshow(frame_bi,'gray')
-#
-#             frame_bi[frame_bi < threshold] = 0
-#             frame_bi[frame_bi >= threshold] = 255
-#             # frame_bi = cv2.adaptiveThreshold(frame_bi, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-#             #                                  cv2.THRESH_BINARY, 25, 5)
-#             frame_3_body = 255 - frame_bi.astype(np.uint8)
-#             # plt.imshow(frame_3_body,'gray')
-#             ret, labels, stats, centroid = cv2.connectedComponentsWithStats(frame_3_body, connectivity=4)
-#             K_1 = 0
-#             for i, stat in enumerate(stats):
-#                 if stat[4] < 300 and stat[2] < 50 and stat[2] > 3 and stat[3] > 3 and stat[3] < 50:  # and stat[4] > 50:
-#                     x1, y1, h, w, area = stat
-#                     position.append([centroid[i][0], centroid[i][1], K_0, K_1, x1, y1, h, w, area])
-#                     K_1 += 1
-#             if K_1 != 1:
-#                 print(K_0)
-#                 print(stats)
-#                 # plt.figure()
-#                 # plt.imshow(frame_1)
-#             K_0 += 1
-#             if K_0 % (25 * 100) == 0:
-#                 print('K_0:   ', K_0)
-#         else:
-#             break
-#
-#     if K_0 >= num_frame - 10:
-#         print('Completed. Congratulations!')
-#     videoCapture.release()
-#     return position
-#
-
-# threshold  # TODO
-
-# video_name = '../tracking/wyh/20210107_155852_KR0190040036.avi'
-video_name = '../tracking/wyh/20210113_145522_A_avi_c.avi'
-# #
-# video_name = '../tracking/wyh/20210107_155852_KR0190040036_1.avi'
 # hours = 1 / 60
 # threshold = 20
 # fps = 100
 # background_interval = 100
-
 # FPS = videoCapture.get(cv2.CAP_PROP_FPS)  100
 
-# plt.imshow(frame)
-
-
-position, background, error = get_position_by_background(video_name, hours=1, threshold=40, fps=100,
+video_name = '../tracking/wyh/20210113_145522_A_avi_c.avi'
+position, background, error = get_position_by_background(video_name, hours=1/60, threshold=40, fps=100,
                                background_interval=1000)
+
 position_np = np.asarray(position)
 print(position_np.shape)
 
@@ -331,11 +231,9 @@ np.save(npy_name, position_np)
 
 
 
-
-
-
-
-
+K_0, stats, frame, frame_grey = error[0]
+threshold = 40
+process_picture_for_test(frame, background, threshold)
 
 
 
