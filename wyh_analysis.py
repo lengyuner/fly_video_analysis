@@ -231,9 +231,9 @@ np.save(npy_name, position_np)
 
 
 
-K_0, stats, frame, frame_grey = error[0]
-threshold = 40
-process_picture_for_test(frame, background, threshold)
+# K_0, stats, frame, frame_grey = error[0]
+# threshold = 40
+# process_picture_for_test(frame, background, threshold)
 
 
 
