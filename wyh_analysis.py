@@ -213,18 +213,7 @@ def process_picture_for_test(frame, background, threshold):
     return None
 
 
-# hours = 1 / 60
-# threshold = 20
-# fps = 100
-# background_interval = 100
-# FPS = videoCapture.get(cv2.CAP_PROP_FPS)  100
 
-video_name = '../tracking/wyh/20210113_145522_A_avi_c.avi'
-position, background, error = get_position_by_background(video_name, hours=1/60, threshold=40, fps=100,
-                               background_interval=1000)
-
-position_np = np.asarray(position)
-# print(position_np.shape)
 
 
 def sort_position(position_disorder):
@@ -242,22 +231,39 @@ def sort_position(position_disorder):
     return position_sorted
 
 
-position_np = sort_position(position_np)
+if __name__ == '__main__':
+    # hours = 1 / 60
+    # threshold = 20
+    # fps = 100
+    # background_interval = 100
+    # FPS = videoCapture.get(cv2.CAP_PROP_FPS)  100
 
-print(position_np.shape)
+    video_name = '../tracking/wyh/20210113_145522_A_avi_c.avi'
+    position, background, error = get_position_by_background(video_name, hours=1 / 60, threshold=40, fps=100,
+                                                             background_interval=1000)
 
-npy_name = video_name[:-4] + '_position' + '_'+time.strftime("%Y%m%d_%H%M") + '.npy'
-np.save(npy_name, position_np)
+    position_np = np.asarray(position)
+    # print(position_np.shape)
+
+    position_np = sort_position(position_np)
+
+    print(position_np.shape)
+
+    npy_name = video_name[:-4] + '_position' + '_' + time.strftime("%Y%m%d_%H%M") + '.npy'
+    np.save(npy_name, position_np)
+
+    # K_0, stats, frame, frame_grey = error[0]
+    # threshold = 40
+    # process_picture_for_test(frame, background, threshold)
+
+    # plt.imshow(frame_temp)
+    #
+    # plt.imsave('fly.jpg',frame_temp)
 
 
-# K_0, stats, frame, frame_grey = error[0]
-# threshold = 40
-# process_picture_for_test(frame, background, threshold)
 
 
-# plt.imshow(frame_temp)
-#
-# plt.imsave('fly.jpg',frame_temp)
+
 
 
 
@@ -321,27 +327,12 @@ position = get_coco_train_data(video_name, hours=1, threshold=40, fps=100,
 position_np = np.asarray(position)
 print(position_np.shape)
 
-
-
-def sort_position(position_np):
-    print(position_np.shape)
-
-    position_sorted = np.ones_like(position_np)
-    # position.append([centroid[i][0], centroid[i][1], K_0, K_1, x1, y1, h, w, area])
-
-    for K_2 in range(int(len(position_np)/7)):
-        position_temp = position_np[K_2:(K_2+7)]
-        position_temp = position_temp[np.argsort(position_temp[:,0]), :]
-        # pose = pose_disorder[np.argsort(pose_disorder[:, 0]), :]
-        position_sorted[K_2:(K_2+7)] = position_temp
-
-    return position_sorted
-
 position_np = sort_position(position_np)
 
 print(position_np.shape)
 
 import csv
+
 
 
 
