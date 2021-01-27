@@ -243,8 +243,6 @@ if __name__ == '__main__':
                                                              background_interval=1000)
 
     position_np = np.asarray(position)
-    # print(position_np.shape)
-
     position_np = sort_position(position_np)
 
     print(position_np.shape)
@@ -321,37 +319,19 @@ def get_coco_train_data(video_name, hours=1/60, threshold=40, fps=100,
     return position # , background, error_info
 
 
-video_name = '../tracking/wyh/20210113_145522_A_avi_c.avi'
-position = get_coco_train_data(video_name, hours=1, threshold=40, fps=100,
-                               background_interval=1000)
-position_np = np.asarray(position)
-print(position_np.shape)
 
-position_np = sort_position(position_np)
+def npy2csv():
+    import csv
+    video_name = '../tracking/wyh/20210113_145522_A_avi_c.avi'
+    position = get_coco_train_data(video_name, hours=1/2, threshold=40, fps=100,
+                                   background_interval=100)
+    position_np = np.asarray(position)
+    print(position_np.shape)
 
-print(position_np.shape)
+    position_np = sort_position(position_np)
 
-import csv
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    print(position_np.shape)
+    return None
 
 
 
