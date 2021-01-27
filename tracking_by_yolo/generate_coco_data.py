@@ -15,15 +15,15 @@ import os
 import csv
 import numpy as np
 
-__CLASS__ = ['__background__', 'lpr']   # class dictionary, background must be in first index.
+__CLASS__ = ['__background__', 'fly']   # class dictionary, background must be in first index.
 
 def argparser():
     parser = argparse.ArgumentParser("define argument parser for pycococreator!")
     # parser.add_argument("-r", "--root_path", default="/home/andy/workspace/ccpd_300x300", help="path of root directory")
     parser.add_argument("-r", "--root_path", default="../data/fly_coco", help="path of root directory")
     parser.add_argument("-p", "--phase_folder", default=["coco"], help="datasets path of [train, val, test]")
-    parser.add_argument("-po", "--have_points", default=True, help="if have points we will deal it!")
-    parser.add_argument("--kp", "--keypoint", default="pose.npy", help="read data of keypoints.")
+    parser.add_argument("-po", "--have_points", default=False, help="if have points we will deal it!")
+    # parser.add_argument("--kp", "--keypoint", default="pose.npy", help="read data of keypoints.")
     return parser.parse_args()
 
 def MainProcessing(args):
@@ -39,21 +39,14 @@ def MainProcessing(args):
 
     # coco annotations info.
     annotations["info"] = {
-        "description": "fly dataset format convert to COCO format",
+        "description": "wyh fly dataset format convert to COCO format",
         "url": "https://github.com/lengyuner/fly_video_analysis",
         "version": "0.1",
-        "year": 2020,
+        "year": 2021,
         "contributor": "Yun-Er Leng",
-        "date_created": "2020/12/22"
+        "date_created": "2021/01/27"
     }
-    # annotations["info"] = {
-    #     "description": "customer dataset format convert to COCO format",
-    #     "url": "http://cocodataset.org",
-    #     "version": "1.0",
-    #     "year": 2019,
-    #     "contributor": "andy.wei",
-    #     "date_created": "2019/01/24"
-    # }
+
 
     # coco annotations licenses.
     annotations["licenses"] = [{
@@ -70,14 +63,16 @@ def MainProcessing(args):
         annotations["categories"].append(
             {
                 "supercategory": "object",
-                "id": cls, #这里的id是怎么定义的，怎么更换成图片的名字
+                "id": cls, #这里的id是怎么定义的，怎么更换成图片的名字 class = cls
                 "name": clsname
             }
         )
         for catdict in annotations["categories"]:
-            if "lpr" == catdict["name"] and args.have_points:
-                # catdict["keypoints"] = ["top_left", "top_right", "bottom_right", "bottom_left"]
+            if "fly" == catdict["name"] and args.have_points:
                 catdict["keypoints"] = ["Head", "Center", "Tail", "LWing", "RWing"]
+                catdict["skeleton"] = [[]]
+            elif "fly" == catdict["name"]:
+                catdict["keypoints"] = []
                 catdict["skeleton"] = [[]]
 
     for phase in phase_folder:
