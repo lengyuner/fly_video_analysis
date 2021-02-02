@@ -23,7 +23,7 @@ from egg_heatmap import heatmap_with_time, heatmap_with_time_sum
 from egg_heatmap import show_all_hours_in_one_3D_picture,show_all_hours_3D_picture_separately
 from egg_heatmap import show_one_hours_3D_picture_separately
 
-
+from egg_heatmap import distance_with_time
 
 # get_position_by_background_and_save_pictures(video_name, hours =13, edge=[6, 8], threshold=70, fps=25,
 #                                to_path='../data/picture/train2020/', if_save_pic=1,
@@ -237,7 +237,36 @@ show_all_hours_3D_picture_separately(position_np, from_hour=0, to_hour=2, num_pl
 show_one_hours_3D_picture_separately(position_np, from_hour=2, num_interval=3, num_plt_begin =100)
 
 
+#######################################################
+#######################################################
+#######################################################
+#######################################################
+# 展示果蝇在近端和远端的变化，随时间变化
+
+
+M=2
+N=4
+plt.figure()
+heatmap_all = []
+K_all = [1, 2, 5, 6, 3, 4, 7, 8]
+for K in range(len(video_name_all)):
+    plt.subplot(M,N,K_all[K])
+    plt.title(video_name_all[K].split('/')[2][6:-12]+'_'+video_name_all[K].split('/')[3][-6:-4])
+    # heatmap = heatmap_without_time_modified(position_np_all[K][0:180000], distance_threshold=5, frame_interval=10,
+    #                                         max_count=20, if_show_pic=1)
+    fps = 25
+    time_interval = fps * 60
+    distance_with_time(position_np_all[K][0:180000], time_interval)
+    # time_interval = fps * 60 * 5
+    # distance_with_time(position_np_all[K], time_interval)
+    print(video_name_all[K])
+    # heatmap_all.append(heatmap)
+
+
+
+
 # position_heatmap = heatmap_without_time_not_modified(position_np,if_show_pic=0)
+
 
 
 

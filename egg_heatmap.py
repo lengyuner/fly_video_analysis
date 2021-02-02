@@ -297,6 +297,52 @@ def heatmap_with_time_sum(position_heatmap_time, interval_long=10, num_interval=
     # len()
 
 
+def distance_with_time(position_np, time_interval):
+    x_org = position_np[:, 0]
+    x_modified = x_org - min(x_org)
+    y_org = position_np[:, 1]
+    y_modified = y_org - min(y_org)
+
+    y_mid = max(y_modified) / 2
+
+    y_01 = np.copy(y_modified)
+    for K_0 in range(len(position_np)):
+        y_01[K_0] = 1 if y_modified[K_0] > y_mid else 0
+
+    y_temp = np.copy(y_modified[0:int(len(y_01) / time_interval)])
+    for K_0 in range(int(len(y_01) / time_interval)):
+        y_temp[K_0] = sum(y_01[(K_0 * time_interval):(K_0 * time_interval + time_interval)])
+
+    # plt.figure()
+    plt.plot(range(len(y_temp)), y_temp)
+    return y_temp
+
+#
+# video_name = '../data/video_CS_20201031_h_0_to_h_13/video_CS_20201031_h_0_to_h_13_552_713_239_447_4.avi'
+# position_name = video_name[:-4] + '_position.npy'
+# position_np = np.load(position_name)
+# print(position_np.shape)
+
+# [centroid[i][0], centroid[i][1], K_0, K_1, x1, y1, h, w, area]
+# x_max = np.max(position_np[:,4])
+# y_max = np.max(position_np[:,5])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
